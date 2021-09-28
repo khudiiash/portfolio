@@ -28,6 +28,7 @@ body, html {
     letter-spacing: 4px;
     font-weight: 100;
     background: #111;
+    pointer-events: none;
 }
 
 body {
