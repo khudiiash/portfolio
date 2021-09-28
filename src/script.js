@@ -17,6 +17,10 @@ const sizes = {
     height: window.innerHeight
 }
 gsap.registerPlugin(ScrollToPlugin)
+
+LoadingManager.onLoad = () => {
+    gsap.to('.loading', {opacity: 0})
+}
 const logos = {
     'vue': '/images/vue.png',
     'react': 'https://logo.clearbit.com/reactjs.org',
