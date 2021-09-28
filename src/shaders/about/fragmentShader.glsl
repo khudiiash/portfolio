@@ -23,6 +23,6 @@ void main() {
 
     
     // Alpha
-    float alpha = uTime / 20.;
-    gl_FragColor = vec4(circle, 1.);
+    float alpha = 1. - smoothstep(.1, 15., distance(vPosition, vec3(10.))) * sin(uTime) * vScale;
+    gl_FragColor = vec4(circle, alpha);
 }

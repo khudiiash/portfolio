@@ -337,7 +337,7 @@ document.onmousemove = e => {
     if (astronaut) gsap.to(astronaut.rotation, 1.5, {z: -x - .5, x: y * .5})
 
     gsap.to(models.rotation, 2, {z: -x * .3})
-    gsap.to(models.scale, 3, {x: Math.abs(x)  + .7, y: Math.abs(x)  + .7, z: Math.abs(x) + .7, ease: 'power2.inOut'})
+    gsap.to(models.scale, 2, {x: Math.abs(x)  + .8, y: Math.abs(x)  + .8, z: Math.abs(x) + .8})
 
     if (window.scrollY) {
         gsap.to(camera.position, {x: 0})

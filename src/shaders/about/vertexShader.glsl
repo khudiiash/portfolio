@@ -20,7 +20,7 @@ void main() {
                       height;
     modelPosition.z += elevation;
     vec4 viewPosition = viewMatrix * modelPosition;
-    gl_PointSize = 200. * aScale;
+    gl_PointSize = 150. * aScale;
     gl_PointSize *= (1.0 / - viewPosition.z);
     gl_PointSize += aScale;
     vElevation = elevation;
