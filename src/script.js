@@ -45,12 +45,15 @@ const projects = [
 const uniforms = {
     uTime: {value: 0},
     uMouse: {value: new THREE.Vector3()},
+    uScroll: {value: 0},
     uOpacity: {value: 0},
     uSize: {value: 600},
+    uCameraPos: {value: new THREE.Vector3()},
     uTransparency: {value: 1}
 }
 
 const canvas = document.querySelector('.webgl')
+let screen = '';
 const scene = new THREE.Scene()
 const clock = new THREE.Clock()
 const raycaster = new THREE.Raycaster();
@@ -169,7 +172,7 @@ for (let i = 0; i < projects.length; i ++) {
 sphere.geometry.setAttribute( 'aScale', new THREE.BufferAttribute( aScale, 1 ) );
 
 gsap.timeline()
-    .from('nav div', {duration: 2, opacity: 0, xPercent: -100, stagger: .1, ease: 'power2.inOut'})
+    .from('nav div', {duration: 2, opacity: 0, xPercent: -100, stagger: .1})
     .from(sphere.position, {duration: 2, z: -2}, '<')
     .from('#scroll-down',1, {opacity: 0})
 
@@ -211,7 +214,7 @@ modelLoader.load('/models/controller.glb', glb => {
         controller.scale.setScalar(.2)
         controller.position.set(-6, -10, 20)
     }
-    scene.add(controller)
+    models.add(controller)
 })
 
 modelLoader.load('/models/human.glb', glb => {
@@ -229,7 +232,7 @@ modelLoader.load('/models/human.glb', glb => {
             human.scale.setScalar(2)
             human.position.set(4, -10, 25)
         }
-        scene.add(human)
+        models.add(human)
     })
 })
 
@@ -248,14 +251,14 @@ modelLoader.load('/models/astronaut.glb', glb => {
             astronaut.scale.setScalar(1)
             astronaut.position.set(3, -20, 20)
         }
-        scene.add(astronaut)
+        models.add(astronaut)
     })
 })
 modelLoader.load('/models/tree.glb', glb => {
     tree = glb.scene.children[0]
     const g = tree.geometry
     g.rotateZ(Math.PI)
-    g.scale(5,5,5)
+    g.scale(4.5,4.5,4.5)
     tree = new THREE.Points(tree.geometry, pointsMat)
     sphere.add(tree)
     tree.position.set(-40,20,-5)
@@ -267,7 +270,7 @@ modelLoader.load('/models/tree.glb', glb => {
 
 
 // About
-const about = "My passion in web development usually goes beyond ordinary HTML layouts. I love to create unusual things, extraordinary spaces, and interactive realities. To achieve these purposes, I prefer using the latest 2D and 3D technologies. At the same time, besides of esthetics, I love creating functional web applications that might be useful to many people. If you're looking for the same things, we might find a common language."
+const about = "My passion in web development usually goes beyond ordinary HTML layouts. I love to create unusual things, extraordinary spaces, and interactive realities. To achieve these purposes, I prefer using the latest 2D and 3D technologies. At the same time, besides of the aesthetics, I love creating functional web applications that might be useful to many people. If you're looking for the same things, we might find a common language."
 const aboutMesh = new Text()
 aboutMesh.text = about
 aboutMesh.font = '/fonts/montserrat/Montserrat-Regular.ttf'
@@ -281,6 +284,9 @@ aboutMesh.rotation.x = -Math.PI / 2
 aboutMesh.position.set(0, -20, 30)
 
 scene.add(aboutMesh)
+
+const models = new THREE.Object3D()
+scene.add(models)
 
 
 
@@ -324,10 +330,15 @@ document.onmousemove = e => {
 	mouse.y = - ( e.clientY / window.innerHeight ) * 2 + 1;
 
     gsap.to(uniforms.uMouse.value, 1, {x, y})
+    
 
     if (controller) gsap.to(controller.rotation, 1.5, {z: -x - .5, x: y * .5})
     if (human) gsap.to(human.rotation, 1.5, {z: -x - .5, x: y * .5})
     if (astronaut) gsap.to(astronaut.rotation, 1.5, {z: -x - .5, x: y * .5})
+
+    gsap.to(models.rotation, 2, {z: -x * .3})
+    gsap.to(models.scale, 3, {x: Math.abs(x)  + .7, y: Math.abs(x)  + .7, z: Math.abs(x) + .7, ease: 'power2.inOut'})
+
     if (window.scrollY) {
         gsap.to(camera.position, {x: 0})
         return
@@ -343,7 +354,7 @@ document.addEventListener('click', () => {
 document.onscroll = e => {
     const {scrollY} = window
   
-
+    uniforms.uScroll.value = scrollY
     if (scrollY) gsap.to(camera.position, {x: 0})
     if (scrollY / 60 < 20) {
         gsap.to(camera.position, {y: scrollY / 60})
@@ -352,22 +363,23 @@ document.onscroll = e => {
         gsap.to(uniforms.uTransparency, 1, {value: 1})
         gsap.to(aboutMesh.position, {z: 30})
         gsap.to(sphere.scale, 1, {x: 1, y: 1, z: 1})
-        // if (sphere.userData.iY) gsap.to(sphere.rotation, 0, {y: sphere.userData.iY})
         sphere.children.map(c => gsap.to(c.material.uniforms.uOpacity, {value: 1}))
         if (controller) gsap.to(controller.position, 1, {z: 30})
         if (human) gsap.to(human.position, 1, {z: 30})
         if (astronaut) gsap.to(astronaut.position, 1, {z: 30})
-
     }
     else {
         if (!sphere.userData.iY) sphere.userData.iY = sphere.rotation.y
+        if (!sphere.userData.iX) sphere.userData.iX = sphere.rotation.x
         projects.map((p,i) => gsap.to(p.object.position, 1, {y: -scrollY * .01, stagger: .1}))
         gsap.to(uniforms.uTransparency, 1, {value: 0})
-        gsap.to(sphere.scale, 1, {x: scrollY * .002})
+        gsap.to(sphere.scale, 1, {x: scrollY * .004, z: scrollY * .002})
+        gsap.to(sphere.rotation, 1, {x: '+=' + scrollY * .000005})
+
         sphere.children.map(c => gsap.to(c.material.uniforms.uOpacity, {value: 0}))
 
         gsap.to(sphere.rotation, 1, {y: '-=' + (scrollY * .000001)})
-        gsap.to(aboutMesh.position, 1, {z: -scrollY * .009 + 10})
+        gsap.to(aboutMesh.position, 1, {z: -scrollY * .01 + 10})
 
         
         if (isMobile) {
@@ -375,9 +387,9 @@ document.onscroll = e => {
             if (human) gsap.to(human.position, 1, {z: -scrollY * .008 + 20})
             if (astronaut) gsap.to(astronaut.position, 1, {z: -scrollY * .008 + 3})
         } else {
-            if (controller) gsap.to(controller.position, 1, {z: -scrollY * .008 + 15})
-            if (human) gsap.to(human.position, 1, {z: -scrollY * .008 + 25})
-            if (astronaut) gsap.to(astronaut.position, 1, {z: -scrollY * .008 + 20})
+            if (controller) gsap.to(controller.position, 1, {z: -scrollY * .01 + 15})
+            if (human) gsap.to(human.position, 1, {z: -scrollY * .01 + 18})
+            if (astronaut) gsap.to(astronaut.position, 1, {z: -scrollY * .01 + 20})
 
         }
 
@@ -396,19 +408,22 @@ document.onscroll = e => {
     if (scrollY > 400 && scrollY < 1200) {
         if (isMobile) projects.map(p => gsap.to(p.object.scale, .5, {x: 1, y: 1, z: 1}))
         document.querySelector('nav div:nth-child(1)').classList.add('hovered')
+        screen = 'works'
     }  else {
         if (isMobile) projects.map(p => gsap.to(p.object.scale, .5, {x: 0, y: 0, z: 0}))
         document.querySelector('nav div:nth-child(1)').classList.remove('hovered')
+        gsap.to(sphere.rotation, 1, {x: 1.9})
     }
     if (scrollY > 1200 && scrollY < 2700) {
         gsap.to(aboutMesh.material, 1, {opacity: 1})
-
         document.querySelector('nav div:nth-child(2)').classList.add('hovered')
+        screen = 'about'
     } else  document.querySelector('nav div:nth-child(2)').classList.remove('hovered')
-
+    
     if (scrollY > 3400) {
         document.querySelector('nav div:nth-child(3)').classList.add('hovered')
         gsap.to(aboutMesh.material, 1, {opacity: 0})
+        screen = 'contact'
         gsap.timeline()
             .to('.svg:not(.telegram)', 1, {scale: 1, ease: 'back', stagger: .2})
             .to('.telegram', 1, {scale: 1.15, ease: 'back'}, '<.4')
@@ -444,7 +459,12 @@ const tick = () => {
     const elapsedTime = clock.getElapsedTime()
     // controls.update()
     raycaster.setFromCamera( mouse, camera );
-    if (!isMobile) sphere.rotation.y -= uniforms.uMouse.value.x  * .01 || -.001
+    sphere.rotation.y -= /contact|about/.test(screen)
+                        ? uniforms.uMouse.value.x  * .001
+                        : screen 
+                            ? uniforms.uMouse.value.x  * .01
+                            : -.001
+    if (screen === 'works') aboutMesh.position.z = 30
     camera.lookAt(new THREE.Vector3(0, 0, 0))
     if ( projects.map(p => p.object).length) {
         const intersects = raycaster.intersectObjects( projects.map(p => p.object) );
@@ -480,6 +500,7 @@ const tick = () => {
     }
 
     uniforms.uTime.value = elapsedTime
+    uniforms.uCameraPos.value = camera.position
     // aboutMesh.position.y = elapsedTime
     const delta = elapsedTime - oldElepasedTime
     if (controller) controller.rotation.y = Math.sin(elapsedTime) * .1

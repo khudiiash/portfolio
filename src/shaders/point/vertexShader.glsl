@@ -1,5 +1,6 @@
 uniform vec3 uMouse;
 uniform float uTime;
+uniform float uScroll;
 
 varying vec3 vPosition;
 varying vec2 vUv;
@@ -15,6 +16,7 @@ void main() {
     vec4 viewPosition = viewMatrix * modelPosition;
     gl_PointSize = 12. * aScale;
     gl_PointSize *= (1.0 / - viewPosition.z);
+    if (uScroll > 1000.) gl_PointSize += uScroll * aScale * .0005;
     gl_Position = projectionMatrix * viewPosition;
     vUv = uv;
     vScale = aScale;

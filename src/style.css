@@ -142,6 +142,10 @@ nav div:hover::before,  nav div.hovered::before{
     transform: scale(0) translateY(5px);
 }
 
+.contacts svg, .contacts h2 {
+    filter: drop-shadow(0 0 20px #111) drop-shadow(0 0 30px #111);
+}
+
 
 @media screen and (max-width: 600px) {
     nav div {
